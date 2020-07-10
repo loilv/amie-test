@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2">
+                <div class="card" style="width: 18rem;">
+                    <img class="card-img-top"
+                         src="https://scontent.fhan2-1.fna.fbcdn.net/v/t1.0-9/p720x720/40096998_691508887892799_7285899095489642496_o.jpg?_nc_cat=102&_nc_sid=110474&_nc_ohc=-EuSgYLAuuwAX8ri4Gk&_nc_ht=scontent.fhan2-1.fna&_nc_tp=6&oh=f5d687bd41de13258456b261aea77dd0&oe=5F2F4960"
+                         alt="Card image cap">
+                    <div class="card-body">
+                        <h5 class="card-title"><h3 class="text-center">LÊ VĂN LỢI</h3></h5>
+                        <hr>
+                        <div class="card-text">
+                            <p><i class="fa fa-birthday-cake btn btn-default btn-circle"></i> 01/05/1995</p>
+                            <p><i class="fa fa-envelope-o btn btn-default btn-circle"></i> loilv.295@gmail.com</p>
+                            <p><i class="fa fa-phone btn btn-default btn-circle"></i> 0972143624</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <textarea name="" id="" cols="30" rows="15" readonly class="form-control">
+Bài 1:
+Các BE FW đã từng làm: Laravel 5.6, Python Flask, Python Django, Python odoo
+Thành phần phải có ở BE: Controller, View, Model, Authenticate, Router, Middleware
+
+Bài 2:
+
+Giải thuật:
+Sắp xếp chẵn, lẻ:
+Lặp các phần tử của mảng, kiểm tra nếu phần tử % 2 != 0 => nghịch đảo phần tử,
+
+Lấy phần tử chẵn cuối cùng:
+Lặp các phần tử => kiểm tra nếu phần tử % 2 == 0 set last_index = phần tử đó
+                                </textarea>
+                                <h3>Code</h3>
+                                <pre>
+def amiesoft(list):
+    turn = 0
+    while turn < len(list):
+        for i in range(len(list) -1):
+            if list[i] % 2 != 0:
+                list[i], list[i+1] = list[i+1], list[i]
+        turn += 1
+
+    for i in range(len(list)):
+        if list[i] % 2 != 0:
+            break
+
+        if list[i] % 2 == 0:
+            last_index = list[i]
+
+    return last_index
+
+list_nums = [1,2,3,4,5,6]
+last_index = amiesoft(list_nums)
+print(list_nums, last_index)
+                                </pre>
+                            </div>
+                            <div class="col-md-6">
+                                <div>
+                                    <h3>Tỉnh/Thành phố:</h3>
+                                    <select id="province" data-placeholder="Choose a Province..." name="province"
+                                            class="chosen-province" tabindex="2">
+                                        <option value="select">Select</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <h3>Huyện/Xã Phường</h3>
+                                    <select id="district" data-placeholder="Choose a Province..." name="province"
+                                            class="chosen-district" tabindex="2">
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div style="padding: 20px 0">
+                                    <h5>Số dân của tỉnh: <span id="population_prov"></span></h5>
+                                    <h5>Số dân của huyện: <span id="population_dist"></span></h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+{% endblock content %}
+
+{% block scripts %}
+    <script>
+        $(document).ready(function () {
+            $.get("https://mockserver-quantv.herokuapp.com/get_provinces")
+                .done(function (data) {
+                    data.forEach(item => {
+                        $('body #province').append($('<option>', {
+                            value: item.id,
+                            text: item.name
+                        }));
+                    });
+                    $('.chosen-province').chosen({width: "100%"});
+                    $('.chosen-district').chosen({width: "100%"});
+                });
+
+        });
+
+        $('.chosen-province').on('change', function (evt, params) {
+            if (params.selected !== 'select') {
+                getDistrict(params.selected);
+            }
+        });
+
+        function getDistrict(province_id) {
+            $.get("https://mockserver-quantv.herokuapp.com/get_districts", {'province_id': province_id})
+                .done(function (data) {
+                    $('body #district option').remove();
+                    data.forEach(item => {
+                        $('body #district').append($('<option>', {
+                            value: item.id,
+                            text: item.name
+                        }));
+                    });
+                    $('.chosen-district').trigger('chosen:updated');
+                    var prov = $('#province').val();
+                    getInfoProv(prov, 'province_population');
+                    getInfoDist(prov, 'district_population')
+                });
+        }
+
+        $('.chosen-district').on('change', function (evt, params) {
+            if (params.selected !== 'select') {
+                var prov = $('#province').val();
+                getInfoDist(prov, 'district_population')
+            }
+        });
+
+        function getInfoProv(prov, endPoint) {
+            $.get("https://mockserver-quantv.herokuapp.com/" + endPoint, {'province_id': prov})
+                .done(function (data) {
+                    $('body #population_prov').text(data.population)
+                });
+        }
+
+        function getInfoDist(prov, endPoint) {
+            var dist = $('#district').val();
+            $.get("https://mockserver-quantv.herokuapp.com/" + endPoint, {'province_id': prov, 'district_id': dist})
+                .done(function (data) {
+                    $('body #population_dist').text(data.population)
+                });
+        }
+
+    </script>
+{% endblock scripts %}
