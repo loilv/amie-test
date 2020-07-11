@@ -1,4 +1,4 @@
-App using Django 3x, python3, pip3
+App using Django 3x, python3, pip3, mysql
 
 #Cài đặt: 
 Tạo vitualenv: ví dụ: virtualenv -p python3 venv
